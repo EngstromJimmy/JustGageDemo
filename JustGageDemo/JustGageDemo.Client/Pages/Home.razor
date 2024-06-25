@@ -1,0 +1,15 @@
+﻿@page "/"
+@using BlazorJustGage
+@rendermode InteractiveServer
+
+<JustGage Min="0" Max="100" Value="@value"/>
+<button @onclick="UpdateGauge">Count up</button>
+
+@code{
+    int value = 0;
+    void UpdateGauge()
+    {
+        value++;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,41 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div id="@GaugeId"></div>
+
+@code {
+    [Parameter] public string GaugeId { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Min { get; set; } = 0;
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public string Title { get; set; } = "Gauge";
+
+    private IJSObjectReference module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/_content/BlazorJustGage/JustGage.razor.js");
+            await module.InvokeVoidAsync("initializeGauge", GaugeId, Value, Min, Max, Title);
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (module != null)
+        {
+            await module.InvokeVoidAsync("updateGauge", GaugeId, Value);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module != null)
+        {
+            await module.InvokeVoidAsync("disposeGauge", GaugeId);
+            await module.DisposeAsync();
+        }
+    }
+}
